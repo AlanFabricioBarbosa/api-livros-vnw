@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields
 import sqlite3
+import re
 
 app = Flask(__name__)
 
@@ -32,21 +33,24 @@ def home_page():
 @app.route('/doar', methods=['POST'])
 def doar():
    dados = request.get_json()
-   livro_schema = LivroSchema()
 
-   try:
-      livro = livro_schema.load(dados)
-   except ValidationError as err:
-      return jsonify({"erro": err.messages}), 400
+   titulo = dados.get('titulo')
+   categoria = dados.get('categoria')
+   autor = dados.get('autor')
+   imagem_url = dados.get('imagem_url')
+
+   if not all([titulo, categoria, autor, imagem_url]):
+      return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+
+   if not re.match(r'^https://', imagem_url):
+      return jsonify({"erro": "A URL da imagem deve começar com 'https://'"}), 400
 
    with sqlite3.connect('database.db') as conn:
-      conn.execute(""" 
-            INSERT INTO livros (titulo, categoria, autor, imagem_url)
-            VALUES (?, ?, ?, ?)""",
-                     (livro['titulo'], livro['categoria'], livro['autor'], livro['imagem_url']))
+      conn.execute(""" INSERT INTO livros (titulo, categoria, autor, imagem_url)
+                     VALUES (?,?,?,?)
+                     """, (titulo, categoria, autor, imagem_url))
       conn.commit()
-      print(f"Livro inserido: {livro}")
-
+   
    return jsonify({"mensagem": "Livro cadastrado com sucesso"}), 201
 
 @app.route('/livros', methods=['GET'])
