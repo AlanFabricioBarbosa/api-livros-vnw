@@ -1,4 +1,4 @@
-# Documentação da API Flask para Gerenciamento de Livros
+# API Flask para Gerenciamento de Livros
 
 ## Introdução
 Esta é uma API desenvolvida em Flask para o gerenciamento de livros. A API permite a doação de livros, listagem dos livros cadastrados e exclusão de um livro específico. A base de dados utilizada é SQLite.
